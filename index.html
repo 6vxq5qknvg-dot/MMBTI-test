@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello, World!</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+      <h1 class="title">Өөрийгөө тодорхойл</h1>
+     <h1 class="title">2a анги Б.Энхжин</h1>
+      <script src="script.js"></script>
+  </body>
+</html><!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<title>MBTI Test (20 Questions)</title>
+<style>
+    body { font-family: Arial; background:#f2f2f2; padding:20px; }
+    .container { background:white; padding:20px; max-width:800px; margin:auto; border-radius:10px; }
+    h2 { color:#333; }
+    .question { margin-bottom:20px; padding-bottom:10px; border-bottom:1px solid #ccc; }
+    button { padding:10px 20px; font-size:16px; margin-top:15px; }
+    .result { background:#e8f5e9; padding:20px; border-radius:10px; margin-top:20px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>MBTI 20 Асуулттай Тест</h2>
+    <form id="mbtiForm">
+
+        <!-- QUESTIONS WILL BE INSERTED HERE BY JS -->
+        <div id="questions"></div>
+
+        <button type="button" onclick="calculateMBTI()">Үр дүнг харах</button>
+    </form>
+
+    <div id="result" class="result" style="display:none;"></div>
+</div>
+
+<script>
+// -------------------------------
+// 20 QUESTIONS DATABASE
+// -------------------------------
+const questions = [
+    { q:"Шинэ хүмүүстэй уулзахад...", I:2, E:0, opts:["Тайван ажиглана","Эхэлж ярихаас зайлсхийдэг","Шууд ярилцана","Идэвхтэй оролцоно"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"IE" },
+    { q:"Их уулзалтаас дараа...", I:2, E:0, opts:["Ганцаараа байхыг хүснэ","Жижиг хүрээтэй ярилцана","Хүмүүстэй байх дуртай","Цэнэглэгддэг"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"IE" },
+    { q:"Санаагаа илэрхийлэхдээ...", I:2,E:0, opts:["Дотроо бодно","Эхлээд бодоод ярьдаг","Ярьж байхдаа бодно","Шууд илэрхийлдэг"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"IE" },
+    { q:"Чөлөөт цагаа...", I:2,E:0, opts:["Ганцаараа өнгөрөөдөг","Жижиг хүрээ","Найзуудтайгаа","Олноороо"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"IE" },
+    { q:"Танихгүй орчинд...", I:2,E:0, opts:["Эхлээд ажиглана","Аажмаар дотносдог","Шууд оролцоно","Гол төвд нь орно"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"IE" },
+
+    { q:"Мэдээлэл ойлгохдоо...", S:2,N:0, opts:["Бодит баримт","Жишээ","Өргөн утга","Ирээдүйг төсөөлнө"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"SN" },
+    { q:"Асуудал шийдэхдээ...", S:2,N:0, opts:["Тодорхой арга","Бодит мэдээлэл","Өргөн талаас","Таамаг гаргана"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"SN" },
+    { q:"Мэдээлэлд хандахдаа...", S:2,N:0, opts:["Нарийн хэсэгт төвлөрдөг","Жижиг мэдээлэл","Холбоо, зураглал харна","Ирээдүйг төсөөлнө"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"SN" },
+    { q:"Сурсан зүйлээ ашиглахдаа...", S:2,N:0, opts:["Баримтад тулгуурлана","Жишээ","Идеагаар хөгжүүлнэ","Шинэ санаа гаргана"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"SN" },
+    { q:"Шинэ санаанд хандахдаа...", S:2,N:0, opts:["Туршлагадаа тулгуурлана","Дорвитой өөрчлөлтгүй","Өргөн санаа","Шинэ санаа"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"SN" },
+
+    { q:"Шийдвэр гаргахдаа...", T:2,F:0, opts:["Логик","Баримт","Мэдрэмж авч үзнэ","Өрөвч хандана"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"TF" },
+    { q:"Маргаан гарахад...", T:2,F:0, opts:["Баримт","Шударга байр суурь","Харилцааг чухалчилна","Уян хатан"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"TF" },
+    { q:"Бусдад хандахдаа...", T:2,F:0, opts:["Шулуун","Зөөлөн","Тэнцвэртэй","Өрөвч"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"TF" },
+    { q:"Асуудлыг дүгнэхдээ...", T:2,F:0, opts:["Логик дүгнэлт","Холбогдол","Сэтгэл санааг харгалзана","Бусдад нийцүүлнэ"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"TF" },
+    { q:"Дүрэм журамд...", T:2,F:0, opts:["Зарчимтай","Шударга","Хүмүүсийг харгалзана","Уян хатан"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"TF" },
+
+    { q:"Төлөвлөхдөө...", J:2,P:0, opts:["Тодорхой төлөвлөгөө","Уян хатан өөрчилнө","Гол хэсгийг төлөвлөнө","Өөрийнхөөрөө"], scores:[[2,0],[0,2],[1,1],[0,2]], dim:"JP" },
+    { q:"Ажлын хэв маяг...", J:2,P:0, opts:["Төлөвлөгөөтэй","Нөхцөлд тааруулдаг","Тэнцвэртэй","Санаагаараа хийдэг"], scores:[[2,0],[0,2],[1,1],[0,2]], dim:"JP" },
+    { q:"Цаг баримтлалт...", J:2,P:0, opts:["Чухал","Дундаж","Тийм ч чухал биш","Уян хатан"], scores:[[2,0],[1,0],[0,1],[0,2]], dim:"JP" },
+    { q:"Төслийг дуусгахдаа...", J:2,P:0, opts:["Төлөвлөгөөнд баримтална","Өөрчлөлтөд уян хатан","Жижиг өөрчлөлттэй","Сүүлд нь шийднэ"], scores:[[2,0],[0,2],[1,1],[0,2]], dim:"JP" },
+    { q:"Ажил амьдралын хэв маяг...", J:2,P:0, opts:["Дүрэмтэй","Өөрчлөлтөд дасамтгай","Уян хатан зохион байгуулалттай","Өөрийнхөөрөө"], scores:[[2,0],[0,2],[1,1],[0,2]], dim:"JP" }
+];
+
+// Insert questions into HTML
+const qDiv = document.getElementById("questions");
+questions.forEach((q, i) => {
+    let html = `<div class='question'><b>${i+1}. ${q.q}</b><br>`;
+    q.opts.forEach((o, j) => {
+        html += `<label><input type='radio' name='q${i}' value='${j}' required> ${o}</label><br>`;
+    });
+    html += "</div>";
+    qDiv.innerHTML += html;
+});
+
+function calculateMBTI() {
+    let scores = {I:0,E:0,S:0,N:0,T:0,F:0,J:0,P:0};
+
+    questions.forEach((q, i) => {
+        let ans = document.querySelector(`input[name="q${i}"]:checked`).value;
+        let [a,b] = q.scores[ans];
+
+        if (q.dim === "IE") { scores.I += a; scores.E += b; }
+        if (q.dim === "SN") { scores.S += a; scores.N += b; }
+        if (q.dim === "TF") { scores.T += a; scores.F += b; }
+        if (q.dim === "JP") { scores.J += a; scores.P += b; }
+    });
+
+    let mbti =
+        (scores.I >= scores.E ? "I" : "E") +
+        (scores.S >= scores.N ? "S" : "N") +
+        (scores.T >= scores.F ? "T" : "F") +
+        (scores.J >= scores.P ? "J" : "P");
+
+    document.getElementById("result").innerHTML =
+        `<h3>Таны MBTI төрөл: ${mbti}</h3>
+         <p>I:${scores.I} / E:${scores.E}</p>
+         <p>S:${scores.S} / N:${scores.N}</p>
+         <p>T:${scores.T} / F:${scores.F}</p>
+         <p>J:${scores.J} / P:${scores.P}</p>`;
+    document.getElementById("result").style.display = "block";
+}
+</script>
+
+</body>
+</html>
